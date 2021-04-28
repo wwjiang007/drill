@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>drill-kudu-storage</artifactId>
-  <name>contrib/kudu-storage-plugin</name>
+  <name>Drill : Contrib : Storage : Kudu</name>
 
 
   <dependencies>
@@ -79,6 +79,7 @@
       <url>https://repository.apache.org/content/groups/snapshots/</url>
       <snapshots>
         <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </snapshots>
       <releases>
         <enabled>false</enabled>

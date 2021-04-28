@@ -42,12 +42,12 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -459,7 +459,15 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
     } else if (cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
       // Case if the column is a date or time
       addColumnToArray(rowWriter, excelFieldNames.get(colPosition), MinorType.TIMESTAMP, false);
-    } else if (cellType == CellType.NUMERIC || cellType == CellType.FORMULA || cellType == CellType.BLANK || cellType == CellType._NONE) {
+    } else if (cellType == CellType.FORMULA) {
+      // Cells with formulae can return either strings or numbers.
+      CellType formulaCellType = cell.getCachedFormulaResultType();
+      if (formulaCellType == CellType.STRING) {
+        addColumnToArray(rowWriter, excelFieldNames.get(colPosition), MinorType.VARCHAR, false);
+      } else {
+        addColumnToArray(rowWriter, excelFieldNames.get(colPosition), MinorType.FLOAT8, false);
+      }
+    } else if (cellType == CellType.NUMERIC || cellType == CellType.BLANK || cellType == CellType._NONE) {
       // Case if the column is numeric
       addColumnToArray(rowWriter, excelFieldNames.get(colPosition), MinorType.FLOAT8, false);
     } else {
@@ -555,7 +563,7 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
       if (timeValue == null) {
         metadataColumnWriters.get(index).setNull();
       } else {
-        metadataColumnWriters.get(index).setTimestamp(new Instant(timeValue));
+        metadataColumnWriters.get(index).setTimestamp(Instant.ofEpochMilli(timeValue.getTime()));
       }
     }
   }
@@ -596,6 +604,7 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
       super(columnWriter);
     }
 
+    @Override
     public void load(Cell cell) {
       if (cell == null) {
         columnWriter.setNull();
@@ -614,6 +623,7 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
       super(columnWriter);
     }
 
+    @Override
     public void load(Cell cell) {
       if (cell == null) {
         columnWriter.setNull();
@@ -629,6 +639,7 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
       super(columnWriter);
     }
 
+    @Override
     public void load(Cell cell) {
       if (cell == null) {
         columnWriter.setNull();
@@ -644,13 +655,14 @@ public class ExcelBatchReader implements ManagedReader<FileSchemaNegotiator> {
       super(columnWriter);
     }
 
+    @Override
     public void load(Cell cell) {
       if (cell == null) {
         columnWriter.setNull();
       } else {
         logger.debug("Cell value: {}", cell.getNumericCellValue());
         Date dt = DateUtil.getJavaDate(cell.getNumericCellValue(), TimeZone.getTimeZone("UTC"));
-        Instant timeStamp = new Instant(dt.toInstant().getEpochSecond() * 1000);
+        Instant timeStamp = Instant.ofEpochMilli(dt.toInstant().getEpochSecond() * 1000);
         columnWriter.setTimestamp(timeStamp);
       }
     }

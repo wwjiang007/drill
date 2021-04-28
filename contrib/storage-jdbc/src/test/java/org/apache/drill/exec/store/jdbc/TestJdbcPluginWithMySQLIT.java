@@ -23,10 +23,16 @@ import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.config.SchemaConfig;
 import com.wix.mysql.distribution.Version;
 import org.apache.drill.categories.JdbcStorageTest;
+import org.apache.drill.common.types.TypeProtos;
 import org.apache.drill.exec.expr.fn.impl.DateUtility;
+import org.apache.drill.exec.physical.rowSet.DirectRowSet;
+import org.apache.drill.exec.physical.rowSet.RowSet;
+import org.apache.drill.exec.record.metadata.SchemaBuilder;
+import org.apache.drill.exec.record.metadata.TupleMetadata;
 import org.apache.drill.test.ClusterFixture;
 import org.apache.drill.test.ClusterTest;
 import org.apache.drill.test.QueryTestUtil;
+import org.apache.drill.test.rowSet.RowSetUtilities;
 import org.joda.time.DateTimeZone;
 import org.junit.AfterClass;
 import org.junit.Assume;
@@ -71,7 +77,7 @@ public class TestJdbcPluginWithMySQLIT extends ClusterTest {
 
     JdbcStorageConfig jdbcStorageConfig = new JdbcStorageConfig("com.mysql.cj.jdbc.Driver",
         String.format("jdbc:mysql://localhost:%s/%s?useJDBCCompliantTimezoneShift=true", mysqlPort, mysqlDBName),
-        "mysqlUser", "mysqlPass", false, null);
+        "mysqlUser", "mysqlPass", false, null, null);
     jdbcStorageConfig.setEnabled(true);
 
     cluster.defineStoragePlugin("mysql", jdbcStorageConfig);
@@ -80,7 +86,7 @@ public class TestJdbcPluginWithMySQLIT extends ClusterTest {
       // adds storage plugin with case insensitive table names
       JdbcStorageConfig jdbcCaseSensitiveStorageConfig = new JdbcStorageConfig("com.mysql.cj.jdbc.Driver",
           String.format("jdbc:mysql://localhost:%s/%s?useJDBCCompliantTimezoneShift=true", mysqlPort, mysqlDBName),
-          "mysqlUser", "mysqlPass", true, null);
+          "mysqlUser", "mysqlPass", true, null, null);
       jdbcCaseSensitiveStorageConfig.setEnabled(true);
       cluster.defineStoragePlugin("mysqlCaseInsensitive", jdbcCaseSensitiveStorageConfig);
     }
@@ -195,6 +201,24 @@ public class TestJdbcPluginWithMySQLIT extends ClusterTest {
         .planMatcher()
         .exclude("Join", "Filter")
         .match();
+  }
+
+  @Test
+  public void pushDownAggWithDecimal() throws Exception {
+    String query = "SELECT sum(decimal_field * smallint_field) AS `order_total`\n" +
+        "FROM mysql.`drill_mysql_test`.person e";
+
+    DirectRowSet results = queryBuilder().sql(query).rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+        .addNullable("order_total", TypeProtos.MinorType.VARDECIMAL, 38, 2)
+        .buildSchema();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+        .addRow(123.32)
+        .build();
+
+    RowSetUtilities.verify(expected, results);
   }
 
   @Test
@@ -324,11 +348,44 @@ public class TestJdbcPluginWithMySQLIT extends ClusterTest {
 
   @Test
   public void testLimitPushDown() throws Exception {
-    String query = "select person_id from mysql.`drill_mysql_test`.person limit 10";
+    String query = "select person_id, first_name, last_name from mysql.`drill_mysql_test`.person limit 100";
     queryBuilder()
         .sql(query)
         .planMatcher()
-        .include("Jdbc\\(.*LIMIT 10")
+        .include("Jdbc\\(.*LIMIT 100")
+        .exclude("Limit\\(")
+        .match();
+  }
+
+  @Test
+  public void testLimitPushDownWithOrderBy() throws Exception {
+    String query = "select person_id from mysql.`drill_mysql_test`.person order by first_name limit 100";
+    queryBuilder()
+        .sql(query)
+        .planMatcher()
+        .include("Jdbc\\(.*ORDER BY `first_name`.*LIMIT 100")
+        .exclude("Limit\\(")
+        .match();
+  }
+
+  @Test
+  public void testLimitPushDownWithOffset() throws Exception {
+    String query = "select person_id, first_name from mysql.`drill_mysql_test`.person limit 100 offset 10";
+    queryBuilder()
+        .sql(query)
+        .planMatcher()
+        .include("Jdbc\\(.*LIMIT 100 OFFSET 10")
+        .exclude("Limit\\(")
+        .match();
+  }
+
+  @Test
+  public void testLimitPushDownWithConvertFromJson() throws Exception {
+    String query = "select convert_fromJSON(first_name)['ppid'] from mysql.`drill_mysql_test`.person LIMIT 100";
+    queryBuilder()
+        .sql(query)
+        .planMatcher()
+        .include("Jdbc\\(.*LIMIT 100")
         .exclude("Limit\\(")
         .match();
   }

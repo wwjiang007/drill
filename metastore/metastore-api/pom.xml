@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>drill-metastore-api</artifactId>
-  <name>metastore/Drill Metastore API</name>
+  <name>Drill : Metastore : API</name>
 
   <dependencies>
     <dependency>
@@ -49,7 +49,6 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-joda</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

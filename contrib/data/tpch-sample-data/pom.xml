@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>tpch-sample-data</artifactId>
-  <name>contrib/data/tpch-sample-data</name>
+  <name>Drill : Contrib : Data : TPCH Sample</name>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -64,9 +64,11 @@
       <url>https://oss.sonatype.org/content/groups/public</url>
       <snapshots>
         <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </snapshots>
       <releases>
         <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </releases>
     </pluginRepository>
   </pluginRepositories>

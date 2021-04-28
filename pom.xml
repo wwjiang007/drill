@@ -33,9 +33,9 @@
   <version>1.19.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Apache Drill Root POM</name>
+  <name>Drill : </name>
   <description>Apache Drill is an open source, low latency SQL query engine for Hadoop and NoSQL.</description>
-  <url>http://drill.apache.org/</url>
+  <url>https://drill.apache.org/</url>
 
   <properties>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -49,7 +49,7 @@
     <shaded.guava.version>28.2-jre</shaded.guava.version>
     <guava.version>19.0</guava.version>
     <forkCount>2</forkCount>
-    <parquet.version>1.11.0</parquet.version>
+    <parquet.version>1.12.0</parquet.version>
     <parquet.format.version>2.8.0</parquet.format.version>
     <!--
       For development purposes to be able to use custom Calcite versions (e.g. not present in jitpack
@@ -58,20 +58,20 @@
       avoid_bad_dependencies plugin found in the file.
     -->
     <calcite.groupId>com.github.vvysotskyi.drill-calcite</calcite.groupId>
-    <calcite.version>1.21.0-drill-r0</calcite.version>
+    <calcite.version>1.21.0-drill-r2</calcite.version>
     <avatica.version>1.15.0</avatica.version>
     <janino.version>3.0.11</janino.version>
     <sqlline.version>1.9.0</sqlline.version>
-    <jackson.version>2.10.3</jackson.version>
+    <jackson.version>2.12.1</jackson.version>
     <zookeeper.version>3.5.7</zookeeper.version>
     <mapr.release.version>6.1.0-mapr</mapr.release.version>
     <ojai.version>3.0-mapr-1808</ojai.version>
     <kerby.version>1.0.0</kerby.version>
     <findbugs.version>3.0.0</findbugs.version>
     <netty.tcnative.classifier />
-    <commons.io.version>2.4</commons.io.version>
+    <commons.io.version>2.7</commons.io.version>
     <hamcrest.core.version>1.3</hamcrest.core.version>
-    <curator.version>4.3.0</curator.version>
+    <curator.version>5.1.0</curator.version>
     <wiremock.standalone.version>2.23.2</wiremock.standalone.version>
     <jmockit.version>1.47</jmockit.version>
     <logback.version>1.2.3</logback.version>
@@ -95,8 +95,8 @@
     <jersey.version>2.25.1</jersey.version>
     <asm.version>7.3.1</asm.version>
     <excludedGroups />
-    <memoryMb>4096</memoryMb>
-    <directMemoryMb>4096</directMemoryMb>
+    <memoryMb>4000</memoryMb>
+    <directMemoryMb>2500</directMemoryMb>
     <rat.skip>true</rat.skip>
     <license.skip>true</license.skip>
     <docker.repository>apache/drill</docker.repository>
@@ -113,9 +113,9 @@
     <surefire.version>3.0.0-M4</surefire.version>
     <commons.compress.version>1.20</commons.compress.version>
     <hikari.version>3.4.2</hikari.version>
-    <netty.version>4.0.48.Final</netty.version>
+    <netty.version>4.1.59.Final</netty.version>
     <httpclient.version>4.5.12</httpclient.version>
-    <libthrift.version>0.13.0</libthrift.version>
+    <libthrift.version>0.14.0</libthrift.version>
     <derby.version>10.14.2.0</derby.version>
     <commons.cli.version>1.4</commons.cli.version>
     <snakeyaml.version>1.26</snakeyaml.version>
@@ -127,6 +127,8 @@
     <xerces.version>2.12.0</xerces.version>
     <commons.configuration.version>1.10</commons.configuration.version>
     <commons.beanutils.version>1.9.4</commons.beanutils.version>
+    <httpdlog-parser.version>5.7</httpdlog-parser.version>
+    <yauaa.version>5.20</yauaa.version>
   </properties>
 
   <scm>
@@ -175,7 +177,7 @@
       <releases>
         <enabled>true</enabled>
         <updatePolicy>never</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
+        <checksumPolicy>fail</checksumPolicy>
       </releases>
       <snapshots>
         <enabled>false</enabled>
@@ -184,9 +186,10 @@
 
     <repository>
       <id>mapr-releases</id>
-      <url>http://repository.mapr.com/maven/</url>
+      <url>https://repository.mapr.com/maven/</url>
       <releases>
         <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </releases>
       <snapshots>
         <enabled>false</enabled>
@@ -201,18 +204,18 @@
       </releases>
       <snapshots>
         <enabled>true</enabled>
+        <checksumPolicy>fail</checksumPolicy>
       </snapshots>
-    </repository>
-
-    <repository>
-      <id>jhdf5-repo</id>
-      <name>ImageJ Repository</name>
-      <url>https://maven.scijava.org/content/repositories/public/</url>
     </repository>
 
     <repository>
       <id>jitpack.io</id>
       <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+      <id>splunk-artifactory</id>
+      <name>Splunk Releases</name>
+      <url>https://splunk.jfrog.io/artifactory/ext-releases-local</url>
     </repository>
   </repositories>
 
@@ -220,6 +223,16 @@
     <system>Jira</system>
     <url>https://issues.apache.org/jira/browse/DRILL</url>
   </issueManagement>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <version>6.0.4</version>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <build>
     <plugins>
@@ -386,7 +399,6 @@
             <exclude>**/*.csvh-test</exclude>
             <exclude>**/*.tsv</exclude>
             <exclude>**/*.txt</exclude>
-            <exclude>**/*.yaml</exclude>
             <exclude>**/*.ssv</exclude>
             <exclude>**/.buildpath</exclude>
             <exclude>**/target/**</exclude>
@@ -408,6 +420,7 @@
             <exclude>**/ssl/*.p12</exclude>
             <exclude>**/*.tbl</exclude>
             <exclude>**/*.httpd</exclude>
+            <exclude>**/*.access_log</exclude>
             <exclude>**/*.autotools</exclude>
             <exclude>**/*.cproject</exclude>
             <exclude>**/*.drill</exclude>
@@ -455,7 +468,7 @@
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
-            <version>8.16</version>
+            <version>8.29</version>
           </dependency>
         </dependencies>
         <configuration>
@@ -502,7 +515,7 @@
             <manifestEntries>
               <Extension-Name>org.apache.drill</Extension-Name>
               <Built-By>${user.name}</Built-By>
-              <url>http://drill.apache.org/</url>
+              <url>https://drill.apache.org/</url>
             </manifestEntries>
           </archive>
         </configuration>
@@ -686,7 +699,6 @@
               <exclude>**/*.md</exclude>
               <exclude>**/*.eps</exclude>
               <exclude>**/*.json</exclude>
-              <exclude>**/*.yaml</exclude>
               <exclude>**/*.seq</exclude>
               <exclude>**/*.parquet</exclude>
               <exclude>**/*.avro</exclude>
@@ -999,7 +1011,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.0.0</version>
+          <version>3.1.1</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -1583,6 +1595,11 @@
         <version>${jackson.version}</version>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.honton.chas.hocon</groupId>
         <artifactId>jackson-dataformat-hocon</artifactId>
         <version>1.1.1</version>
@@ -1806,6 +1823,10 @@
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-native-epoll</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -3640,6 +3661,12 @@
         <repository>
           <id>cloudera</id>
           <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+          <releases>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+          <snapshots>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
         </repository>
       </repositories>
     </profile>
@@ -3771,7 +3798,7 @@
           <releases>
             <enabled>true</enabled>
             <updatePolicy>always</updatePolicy>
-            <checksumPolicy>warn</checksumPolicy>
+            <checksumPolicy>fail</checksumPolicy>
           </releases>
           <snapshots>
             <enabled>false</enabled>
@@ -3780,7 +3807,7 @@
           </snapshots>
           <id>HDPReleases</id>
           <name>HDP Releases</name>
-          <url>http://repo.hortonworks.com/content/repositories/releases</url>
+          <url>https://repo.hortonworks.com/content/repositories/releases</url>
           <layout>default</layout>
         </repository>
       </repositories>

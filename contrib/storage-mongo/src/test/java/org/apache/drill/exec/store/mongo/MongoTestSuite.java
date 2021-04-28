@@ -53,7 +53,6 @@ import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +66,16 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(Suite.class)
-@SuiteClasses({TestMongoFilterPushDown.class, TestMongoProjectPushDown.class,
-    TestMongoQueries.class, TestMongoChunkAssignment.class,
-    TestMongoStoragePluginUsesCredentialsStore.class})
+@Suite.SuiteClasses({
+  TestMongoFilterPushDown.class,
+  TestMongoProjectPushDown.class,
+  TestMongoQueries.class,
+  TestMongoLimitPushDown.class,
+  TestMongoChunkAssignment.class,
+  TestMongoStoragePluginUsesCredentialsStore.class,
+  TestMongoDrillIssue.class
+})
+
 @Category({SlowTest.class, MongoStorageTest.class})
 public class MongoTestSuite extends BaseTest implements MongoTestConstants {
 
@@ -258,6 +264,7 @@ public class MongoTestSuite extends BaseTest implements MongoTestConstants {
         TestTableGenerator.importData(EMPLOYEE_DB, SCHEMA_CHANGE_COLLECTION, SCHEMA_CHANGE_DATA);
         TestTableGenerator.importData(DONUTS_DB, DONUTS_COLLECTION, DONUTS_DATA);
         TestTableGenerator.importData(DATATYPE_DB, DATATYPE_COLLECTION, DATATYPE_DATA);
+        TestTableGenerator.importData(ISSUE7820_DB, ISSUE7820_COLLECTION, EMP_DATA);
       }
       initCount.incrementAndGet();
     }
